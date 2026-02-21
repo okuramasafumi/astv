@@ -44,6 +44,11 @@ Visualize Ruby ASTs (Prism or parse.y) as a compact tree and compare them with a
 - While selecting text, clicking does not toggle expansion.
 - Expand All / Collapse All buttons control every node.
 
+## Tree Folding
+- Nodes with child subtrees display a fold toggle (▶/▼).
+- Clicking the fold toggle hides or shows the entire subtree beneath the node.
+- Fold All / Unfold All buttons fold or unfold every node with children.
+
 ## Text vs Tree
 - Output pane is tabbed: Tree / Text / JSON.
 - Text and JSON tabs include a Copy button.

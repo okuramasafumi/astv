@@ -350,6 +350,21 @@
     .node .value { color: #1f2a44; }
     .node .details { display: none; color: #2b2b2b; font-size: 12px; white-space: pre-line; }
 
+    .fold-toggle {
+      display: inline-block;
+      width: 16px;
+      text-align: center;
+      cursor: pointer;
+      user-select: none;
+      font-size: 10px;
+      color: var(--muted);
+      flex-shrink: 0;
+    }
+
+    li.folded > ul { display: none; }
+    li.folded > .node .fold-toggle::after { content: "▶"; }
+    li:not(.folded) > .node .fold-toggle::after { content: "▼"; }
+
     .rel {
       display: inline-block;
       margin-right: 6px;
@@ -432,6 +447,8 @@ end
       <div id="treeTab" class="tab-panel active">
         <div class="panel-header">
           <div class="panel-actions">
+            <button id="foldAllBtn" class="action-btn" type="button">Fold All</button>
+            <button id="unfoldAllBtn" class="action-btn" type="button">Unfold All</button>
             <button id="expandAllBtn" class="action-btn" type="button">Expand All</button>
             <button id="collapseAllBtn" class="action-btn" type="button">Collapse All</button>
           </div>
@@ -484,6 +501,8 @@ end
     const tabPanels = Array.from(document.querySelectorAll('.tab-panel'));
     const expandAllBtn = document.getElementById('expandAllBtn');
     const collapseAllBtn = document.getElementById('collapseAllBtn');
+    const foldAllBtn = document.getElementById('foldAllBtn');
+    const unfoldAllBtn = document.getElementById('unfoldAllBtn');
 
     let currentLoc = null;
 
@@ -627,6 +646,13 @@ end
           header.dataset.loc = `${loc.startLine},${loc.startColumn},${loc.endLine},${loc.endColumn}`;
           li.dataset.loc = header.dataset.loc;
         }
+      }
+      const hasFoldableChildren = (t === 'object' && hasNodeChildren(value)) ||
+                                 (t === 'array' && value.length > 0);
+      if (hasFoldableChildren) {
+        const foldToggle = document.createElement('span');
+        foldToggle.className = 'fold-toggle';
+        header.insertBefore(foldToggle, header.firstChild);
       }
       if (rep && rep.value) {
         const repSpan = document.createElement('span');
@@ -923,7 +949,28 @@ end
       });
     });
 
+    foldAllBtn.addEventListener('click', () => {
+      tree.querySelectorAll('li').forEach(li => {
+        if (li.querySelector(':scope > ul')) {
+          li.classList.add('folded');
+        }
+      });
+    });
+
+    unfoldAllBtn.addEventListener('click', () => {
+      tree.querySelectorAll('li.folded').forEach(li => {
+        li.classList.remove('folded');
+      });
+    });
+
     tree.addEventListener('click', (event) => {
+      if (event.target.closest('.fold-toggle')) {
+        const li = event.target.closest('li');
+        if (li && li.querySelector(':scope > ul')) {
+          li.classList.toggle('folded');
+        }
+        return;
+      }
       const target = event.target.closest('.node');
       if (!target || !tree.contains(target)) return;
       if (!target.dataset.details) return;
